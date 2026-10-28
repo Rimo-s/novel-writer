@@ -23,6 +23,10 @@ Das Projekt ist eine **Beta in Entwicklung**. Die unten beschriebenen Funktionen
 
 Fremde Projekt-IDs werden serverseitig mit HTTP 404 beantwortet. Eine vom Browser übermittelte Benutzer-ID wird nicht als Eigentümeridentität verwendet. Löschen, nachträgliches Bearbeiten von Romanmetadaten, Kapitelumsortierung, gemeinsame Bearbeitung, PDF- und DOCX-Export sind noch nicht umgesetzt.
 
+### Handy und Desktop
+
+Die Oberfläche passt sich an schmale und große Bildschirme an. Auf dem Handy ist die Kapitelübersicht einklappbar; die Editor-Schaltflächen bieten mindestens 44 Pixel große Klickflächen. Aktive Textformatierungen und der Speicherzustand sind direkt an den Schaltflächen erkennbar.
+
 ## Tech-Stack
 
 Die genauen aufgelösten Versionen stehen in `package-lock.json`.
@@ -52,6 +56,7 @@ Die Hauptanwendung liegt im **Repository-Root**. `clerk-nextjs/` enthält ein ä
 | `app/dashboard/`                                    | Serverseitig geladene Übersicht eigener Romane                               |
 | `app/novel/[id]/`                                   | Geschützte Romanansicht und Kapitelsteuerung                                 |
 | `components/Editor.tsx`                             | TipTap, Speicherstatus, Entwurfssicherung und KI-Vorschau                    |
+| `components/Library.tsx`, `components/Icon.tsx`     | Projektkarten, Bibliotheksansicht und gemeinsame Symbole                     |
 | `components/NewNovel.tsx`                           | Formular zum Erstellen eines Romans                                          |
 | `proxy.ts`, `lib/auth.ts`                           | Clerk-Sitzung und serverseitige Zugangskontrolle                             |
 | `lib/novels.ts`                                     | Datenzugriffe mit Eigentümerfilter, Speicherversionen und KI-Budget          |

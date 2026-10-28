@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import Icon from "@/components/Icon";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -33,8 +34,11 @@ export default function RootLayout({
             Novel Writer<span className="beta">Beta</span>
           </Link>
           <nav aria-label="Hauptnavigation">
-            <Link href={configured ? "/dashboard" : "/setup"}>
-              Schreibbereich
+            <Link
+              className="header-action"
+              href={configured ? "/dashboard" : "/setup"}
+            >
+              <Icon name="book" /> Schreibbereich
             </Link>
             {configured && <UserButton />}
           </nav>

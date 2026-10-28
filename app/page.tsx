@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Icon from "@/components/Icon";
 
 export default function Home() {
   return (
@@ -21,11 +22,22 @@ export default function Home() {
           </p>
           <div className="actions">
             <Link className="button" href="/dashboard">
-              Mit dem Schreiben beginnen <span aria-hidden="true">↗</span>
+              Geschichte beginnen <Icon name="arrow" />
             </Link>
-            <a className="text-button" href="#features">
-              So funktioniert’s ↓
+            <a className="button secondary" href="#features">
+              Entdecken <Icon name="down" />
             </a>
+          </div>
+          <div className="hero-benefits" aria-label="Dein Schreibbereich">
+            <span>
+              <Icon name="check" /> Eigene Kapitel
+            </span>
+            <span>
+              <Icon name="check" /> Automatisch speichern
+            </span>
+            <span>
+              <Icon name="check" /> TXT-Export
+            </span>
           </div>
           <p className="fine-print">
             Ein Projekt in Entwicklung. Mit eigenem Konto und optionaler
@@ -43,7 +55,9 @@ export default function Home() {
             <span>DEIN MANUSKRIPT</span>
           </div>
           <div className="preview-body">
-            <span className="eyebrow">Kapitel 01</span>
+            <span className="eyebrow">
+              Kapitel 01 <span className="preview-tag">Der Anfang</span>
+            </span>
             <h2>
               Alles begann
               <br />

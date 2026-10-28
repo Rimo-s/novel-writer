@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Icon from "./Icon";
 import { requestJson } from "@/lib/client";
 
 export default function NewNovel() {
@@ -32,7 +33,10 @@ export default function NewNovel() {
   }
 
   return (
-    <form className="card new-novel" onSubmit={submit}>
+    <form id="new-project" className="card new-novel" onSubmit={submit}>
+      <span className="form-icon">
+        <Icon name="plus" />
+      </span>
       <span className="eyebrow">Eine neue Idee</span>
       <h2>Deine nächste Geschichte.</h2>
       <label htmlFor="novel-title">Titel</label>
@@ -61,7 +65,8 @@ export default function NewNovel() {
         </p>
       )}
       <button className="button" disabled={busy}>
-        {busy ? "Wird angelegt …" : "+ Schreibprojekt anlegen"}
+        <Icon name={busy ? "loader" : "plus"} className={busy ? "spin" : ""} />
+        {busy ? "Wird angelegt …" : "Schreibprojekt anlegen"}
       </button>
     </form>
   );

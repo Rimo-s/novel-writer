@@ -7,10 +7,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import type { JSONContent } from "@tiptap/core";
+import Icon from "./Icon";
 import { Autosave, type SaveState } from "@/lib/autosave";
 import { requestJson } from "@/lib/client";
 import { documentData } from "@/lib/document";
@@ -48,7 +49,10 @@ const Editor = forwardRef<
     aiEnabled: boolean;
     locked?: boolean;
   }
->(function Editor({ chapter, ownerId, onSaved, aiEnabled, locked = false }, ref) {
+>(function Editor(
+  { chapter, ownerId, onSaved, aiEnabled, locked = false },
+  ref,
+) {
   const [title, setTitle] = useState(chapter.title);
   const [status, setStatus] = useState<SaveState>("saved");
   const [error, setError] = useState("");
@@ -140,6 +144,18 @@ const Editor = forwardRef<
       changed({ ...draft.current, content: editor.getJSON() });
       setWords(editor.getText().trim().split(/\s+/u).filter(Boolean).length);
     },
+  });
+
+  const formatting = useEditorState({
+    editor,
+    selector: ({ editor }) => ({
+      bold: editor?.isActive("bold") ?? false,
+      italic: editor?.isActive("italic") ?? false,
+      heading: editor?.isActive("heading", { level: 2 }) ?? false,
+      list: editor?.isActive("bulletList") ?? false,
+      canUndo: editor?.can().undo() ?? false,
+      canRedo: editor?.can().redo() ?? false,
+    }),
   });
 
   useImperativeHandle(ref, () => ({ flush: () => saver.flush() }), [saver]);
@@ -309,6 +325,9 @@ const Editor = forwardRef<
         </p>
       )}
       <article className="manuscript">
+        <span className="eyebrow manuscript-label">
+          Deine Worte. Deine Geschichte.
+        </span>
         <label className="sr-only" htmlFor="chapter-title">
           Kapiteltitel
         </label>
@@ -324,56 +343,106 @@ const Editor = forwardRef<
           }}
         />
         <div className="toolbar" role="toolbar" aria-label="Text formatieren">
+          <div className="format-tools">
+            <button
+              className="tool-button"
+              type="button"
+              title="Fett (Strg+B)"
+              aria-label="Fett"
+              aria-pressed={formatting?.bold ?? false}
+              disabled={!editor || Boolean(recovery)}
+              onClick={() => editor?.chain().focus().toggleBold().run()}
+            >
+              <Icon name="bold" />
+              <span>Fett</span>
+            </button>
+            <button
+              className="tool-button"
+              type="button"
+              title="Kursiv (Strg+I)"
+              aria-label="Kursiv"
+              aria-pressed={formatting?.italic ?? false}
+              disabled={!editor || Boolean(recovery)}
+              onClick={() => editor?.chain().focus().toggleItalic().run()}
+            >
+              <Icon name="italic" />
+              <span>Kursiv</span>
+            </button>
+            <button
+              className="tool-button"
+              type="button"
+              title="Überschrift"
+              aria-label="Überschrift"
+              aria-pressed={formatting?.heading ?? false}
+              disabled={!editor || Boolean(recovery)}
+              onClick={() =>
+                editor?.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+            >
+              <Icon name="heading" />
+              <span>Überschrift</span>
+            </button>
+            <button
+              className="tool-button"
+              type="button"
+              title="Aufzählung"
+              aria-label="Liste"
+              aria-pressed={formatting?.list ?? false}
+              disabled={!editor || Boolean(recovery)}
+              onClick={() => editor?.chain().focus().toggleBulletList().run()}
+            >
+              <Icon name="list" />
+              <span>Liste</span>
+            </button>
+            <button
+              className="tool-button"
+              type="button"
+              title="Rückgängig"
+              aria-label="Rückgängig"
+              disabled={!formatting?.canUndo || Boolean(recovery)}
+              onClick={() => editor?.chain().focus().undo().run()}
+            >
+              <Icon name="undo" />
+            </button>
+            <button
+              className="tool-button"
+              type="button"
+              title="Wiederholen"
+              aria-label="Wiederholen"
+              disabled={!formatting?.canRedo || Boolean(recovery)}
+              onClick={() => editor?.chain().focus().redo().run()}
+            >
+              <Icon name="redo" />
+            </button>
+          </div>
           <button
-            title="Fett (Strg+B)"
-            disabled={!editor || Boolean(recovery)}
-            onClick={() => editor?.chain().focus().toggleBold().run()}
-          >
-            <strong>Fett</strong>
-          </button>
-          <button
-            title="Kursiv (Strg+I)"
-            disabled={!editor || Boolean(recovery)}
-            onClick={() => editor?.chain().focus().toggleItalic().run()}
-          >
-            <em>Kursiv</em>
-          </button>
-          <button
-            disabled={!editor || Boolean(recovery)}
-            onClick={() =>
-              editor?.chain().focus().toggleHeading({ level: 2 }).run()
-            }
-          >
-            Überschrift
-          </button>
-          <button
-            disabled={!editor || Boolean(recovery)}
-            onClick={() => editor?.chain().focus().toggleBulletList().run()}
-          >
-            Liste
-          </button>
-          <button
-            disabled={!editor || Boolean(recovery)}
-            onClick={() => editor?.chain().focus().undo().run()}
-          >
-            Zurück
-          </button>
-          <button
-            disabled={!editor || Boolean(recovery)}
-            onClick={() => editor?.chain().focus().redo().run()}
-          >
-            Vor
-          </button>
-          <button
-            className="save-button"
+            className="button save-button"
+            type="button"
             disabled={
-              status === "saved" || status === "conflict" || Boolean(recovery)
+              status === "saved" ||
+              status === "saving" ||
+              status === "conflict" ||
+              Boolean(recovery)
             }
             onClick={() => {
               void saver.flush();
             }}
           >
-            Speichern
+            <Icon
+              name={
+                status === "saving"
+                  ? "loader"
+                  : status === "saved"
+                    ? "check"
+                    : "save"
+              }
+              className={status === "saving" ? "spin" : ""}
+            />
+            {status === "saving"
+              ? "Speichert …"
+              : status === "saved"
+                ? "Gespeichert"
+                : "Speichern"}
           </button>
         </div>
         <div inert={Boolean(recovery)}>
@@ -382,7 +451,12 @@ const Editor = forwardRef<
       </article>
       <aside className="ai-panel card">
         <div>
-          <span className="eyebrow">Wenn dir die Worte fehlen</span>
+          <div className="ai-heading">
+            <span className="ai-icon">
+              <Icon name="sparkles" />
+            </span>
+            <span className="eyebrow">Wenn dir die Worte fehlen</span>
+          </div>
           <h2>Ein neuer Gedanke.</h2>
           <p>
             Die KI liest den Schluss dieses Kapitels und schlägt eine
@@ -403,6 +477,10 @@ const Editor = forwardRef<
                 void suggest();
               }}
             >
+              <Icon
+                name={aiBusy ? "loader" : "sparkles"}
+                className={aiBusy ? "spin" : ""}
+              />
               {aiBusy ? "Idee entsteht …" : "Fortsetzung vorschlagen"}
             </button>
           </>
@@ -442,7 +520,7 @@ const Editor = forwardRef<
                   setSuggestion("");
                 }}
               >
-                Am Kapitelende übernehmen
+                <Icon name="plus" /> Am Kapitelende übernehmen
               </button>
               <button className="text-button" onClick={() => setSuggestion("")}>
                 Verwerfen
