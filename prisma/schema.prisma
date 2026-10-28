@@ -4,9 +4,43 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://user:password@localhost:5432/db"
+  url      = env("DATABASE_URL")
 }
 
 model Test {
   id String @id @default(cuid())
+}
+
+model Novel {
+  id          String    @id @default(cuid())
+  ownerId     String
+  title       String
+  description String    @default("")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  chapters    Chapter[]
+
+  @@index([ownerId, updatedAt])
+}
+
+model Chapter {
+  id        String   @id @default(cuid())
+  novelId   String
+  novel     Novel    @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  title     String
+  content   Json
+  plainText String   @default("") @db.Text
+  version   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([novelId, createdAt])
+}
+
+model AiUsage {
+  ownerId String
+  day     String
+  count   Int    @default(0)
+
+  @@id([ownerId, day])
 }
